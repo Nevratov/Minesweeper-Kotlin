@@ -1,0 +1,353 @@
+import kotlin.random.Random
+import kotlin.system.exitProcess
+
+val board = MutableList(9) { MutableList(9) { "." } }
+val boardMines = MutableList(9) { MutableList(9) { "/" } }
+var boardMinesAndTurns = MutableList(9) { MutableList(9) { "." } }
+var mines = 0
+
+val stackList = mutableListOf("start")
+fun checkEmpty(x: Int, y: Int) {
+    if (x == 0 && y == 0) { // Coordinate x = 0, y = 0
+        if (boardMines[0][1] != "X" && boardMines[1][1] != "X" && boardMines[1][0] != "X") {
+            board[0][0] = boardMines[0][0]
+            board[0][1] = boardMines[0][1]
+            board[1][1] = boardMines[1][1]
+            board[1][0] = boardMines[1][0]
+
+            if ("$x$y" !in stackList) {
+                stackList.add("$x$y")
+                checkEmpty(x, y + 1)
+                checkEmpty(x + 1, y + 1)
+                checkEmpty(x + 1, y)
+            }
+        }
+    } else if (x == 0 && y == 8) { // Coordinate x = 0, y = 8
+        if (boardMines[7][0] != "X" && boardMines[7][1] != "X" && boardMines[8][1] != "X") {
+
+            board[8][0] = boardMines[8][0]
+            board[7][0] = boardMines[7][0]
+            board[7][1] = boardMines[7][1]
+            board[8][1] = boardMines[8][1]
+
+            if ("$x$y" !in stackList) {
+                stackList.add("$x$y")
+                checkEmpty(x, y - 1)
+                checkEmpty(x + 1, y - 1)
+                checkEmpty(x + 1, y)
+            }
+        }
+    } else if (x == 8 && y == 0) { // Coordinate x = 8, y = 0
+        if (boardMines[0][7] != "X" && boardMines[1][7] != "X" && boardMines[1][8] != "X") {
+
+            board[0][8] = boardMines[0][8]
+            board[0][7] = boardMines[0][7]
+            board[1][7] = boardMines[1][7]
+            board[1][8] = boardMines[1][8]
+
+            if ("$x$y" !in stackList) {
+                stackList.add("$x$y")
+                checkEmpty(x - 1, y)
+                checkEmpty(x - 1, y + 1)
+                checkEmpty(x , y + 1)
+            }
+        }
+    } else if (x == 8 && y == 8) { // Coordinate x = 8, y = 8
+        if (boardMines[7][8] != "X" && boardMines[7][7] != "X" && boardMines[8][7] != "X") {
+
+            board[8][8] = boardMines[8][8]
+            board[7][8] = boardMines[7][8]
+            board[7][7] = boardMines[7][7]
+            board[8][7] = boardMines[8][7]
+
+            if ("$x$y" !in stackList) {
+                stackList.add("$x$y")
+                checkEmpty(x - 1, y)
+                checkEmpty(x - 1, y - 1)
+                checkEmpty(x , y - 1)
+            }
+        }
+    } else if (x == 0 && y in board.indices) { // Coordinate x = 0, y = 0..8
+        if (boardMines[y-1][0] != "X" && boardMines[y-1][1] != "X" && boardMines[y][1] != "X"
+            && boardMines[y+1][1] != "X" && boardMines[y+1][0] != "X"
+        ) {
+
+            board[y][0] = boardMines[y][0]
+            board[y-1][0] = boardMines[y-1][0]
+            board[y-1][1] = boardMines[y-1][1]
+            board[y][1] = boardMines[y][1]
+            board[y+1][1] = boardMines[y+1][1]
+            board[y+1][0] = boardMines[y+1][0]
+
+            if ("$x$y" !in stackList) {
+                stackList.add("$x$y")
+                checkEmpty(x, y - 1)
+                checkEmpty(x + 1, y - 1)
+                checkEmpty(x + 1 , y)
+                checkEmpty(x + 1 , y - 1)
+                checkEmpty(x , y - 1)
+            }
+        }
+    } else if (x == 8 && y in board.indices) { // Coordinate x = 8, y = 0..8
+        if (boardMines[y - 1][8] != "X" && boardMines[y - 1][7] != "X" && boardMines[y][7] != "X"
+            && boardMines[y + 1][7] != "X" && boardMines[y + 1][8] != "X"
+        ) {
+
+            board[y][8] = boardMines[y][8]
+            board[y-1][8] = boardMines[y-1][8]
+            board[y-1][7] = boardMines[y-1][7]
+            board[y][7] = boardMines[y][7]
+            board[y+1][7] = boardMines[y+1][7]
+            board[y+1][8] = boardMines[y+1][8]
+
+            if ("$x$y" !in stackList) {
+                stackList.add("$x$y")
+                checkEmpty(x, y - 1)
+                checkEmpty(x - 1, y - 1)
+                checkEmpty(x - 1 , y)
+                checkEmpty(x - 1 , y - 1)
+                checkEmpty(x , y + 1)
+            }
+        }
+    } else if (x in board.indices && y == 0) { // Coordinate x = 0..8, y = 0
+        if (boardMines[0][x-1] != "X" && boardMines[1][x-1] != "X" && boardMines[1][x] != "X"
+            && boardMines[1][x+1] != "X" && boardMines[0][x+1] != "X"
+        ) {
+
+            board[0][x] = boardMines[0][x]
+            board[0][x-1] = boardMines[0][x-1]
+            board[1][x-1] = boardMines[1][x-1]
+            board[1][x] = boardMines[1][x]
+            board[1][x+1] = boardMines[1][x+1]
+            board[0][x+1] = boardMines[0][x+1]
+
+            if ("$x$y" !in stackList) {
+                stackList.add("$x$y")
+                checkEmpty(x - 1, y)
+                checkEmpty(x - 1, y + 1)
+                checkEmpty(x, y + 1)
+                checkEmpty(x + 1 , y + 1)
+                checkEmpty(x + 1, y)
+            }
+        }
+    } else if (x in board.indices && y == 8) { // Coordinate x = 0..8, y = 8
+        if (boardMines[8][x-1] != "X" && boardMines[7][x-1] != "X" && boardMines[7][x] != "X"
+            && boardMines[7][x+1] != "X" && boardMines[8][x+1] != "X"
+        ) {
+
+            board[8][x] = boardMines[8][x]
+            board[8][x-1] = boardMines[8][x-1]
+            board[7][x-1] = boardMines[7][x-1]
+            board[7][x] = boardMines[7][x]
+            board[7][x+1] = boardMines[7][x+1]
+            board[8][x+1] = boardMines[8][x+1]
+
+            if ("$x$y" !in stackList) {
+                stackList.add("$x$y")
+                checkEmpty(x - 1, y)
+                checkEmpty(x - 1, y - 1)
+                checkEmpty(x, y - 1)
+                checkEmpty(x + 1 , y - 1)
+                checkEmpty(x + 1, y)
+            }
+        }
+    } else if (x in board.indices && y  in board.indices) { // Coordinate x = 0..8, y = 0..8
+        if (boardMines[y-1][x-1] != "X" && boardMines[y][x-1] != "X" && boardMines[y+1][x-1] != "X"
+            && boardMines[y+1][x] != "X" && boardMines[y+1][x+1] != "X" && boardMines[y][x+1] != "X"
+            && boardMines[y-1][x+1] != "X" && boardMines[y-1][x] != "X"
+        ) {
+            board[y][x] = boardMines[y][x]
+            board[y-1][x-1] = boardMines[y-1][x-1]
+            board[y][x-1] = boardMines[y][x-1]
+            board[y+1][x-1] = boardMines[y+1][x-1]
+            board[y+1][x] = boardMines[y+1][x]
+            board[y+1][x+1] = boardMines[y+1][x+1]
+            board[y][x+1] = boardMines[y][x+1]
+            board[y-1][x+1] = boardMines[y-1][x+1]
+            board[y-1][x] = boardMines[y-1][x]
+
+            if ("$x$y" !in stackList) {
+                stackList.add("$x$y")
+                checkEmpty(x - 1, y - 1)
+                checkEmpty(x - 1, y)
+                checkEmpty(x - 1, y + 1)
+                checkEmpty(x, y + 1)
+                checkEmpty(x + 1, y + 1)
+                checkEmpty(x + 1, y)
+                checkEmpty(x + 1, y - 1)
+                checkEmpty(x, y - 1)
+            }
+        }
+    }
+}
+
+fun printBoard() {
+    println("\n │123456789│\n—│—————————│")
+    for (i in 0..8) {
+        print("${i + 1}│")
+        for (q in 0..8) print(board[i][q])
+        println('|')
+    }
+    println("—│—————————│\n")
+}
+
+fun printBoardFail() {
+    println("\n │123456789│\n—│—————————│")
+    for (i in 0..8) {
+        print("${i + 1}│")
+        for (q in 0..8) print(boardMinesAndTurns[i][q])
+        println('|')
+    }
+    println("—│—————————│\n")
+}
+
+fun getRandomMinesPosition(mines: Int) {
+    var minesCount = mines
+    while (minesCount != 0) {
+        val col = Random.nextInt(0, 9)
+        val row = Random.nextInt(0, 9)
+        if (boardMines[col][row] == "/") {
+            boardMines[col][row] = "X"
+            boardMinesAndTurns[col][row] = "X"
+            minesCount--
+        }
+    }
+
+}
+
+fun cellsWithNumbers() {
+    for (i in 0..8) {
+        for (q in 0..8) {
+            if (boardMines[i][q] != "X") {
+                var minAround = 0
+                if (i - 1 in 0..8 && boardMines[i - 1][q] == "X") minAround++
+                if (i + 1 in 0..8 && boardMines[i+1][q] == "X") minAround++
+                if (q - 1 in 0..8 && boardMines[i][q-1] == "X") minAround++
+                if (q + 1 in 0..8 && boardMines[i][q+1] == "X") minAround++
+                if (q - 1 in 0..8 && i - 1 in 0..8 && boardMines[i-1][q-1] == "X") minAround++
+                if (q - 1 in 0..8 && i + 1 in 0..8 && boardMines[i+1][q-1] == "X") minAround++
+                if (q + 1 in 0..8 && i - 1 in 0..8 && boardMines[i-1][q+1] == "X") minAround++
+                if (q + 1 in 0..8 && i + 1 in 0..8 && boardMines[i+1][q+1] == "X") minAround++
+                boardMines[i][q] = if (minAround != 0) minAround.toString() else "/"
+            }
+        }
+    }
+}
+
+fun turn() {
+    var statusTurn = false
+    while (!statusTurn) {
+        print("Set/unset mine marks or claim a cell as free: ")
+        val (xCor, yCor, action) = readln().split(" ")
+        val x = xCor.toInt() - 1
+        val y = yCor.toInt() - 1
+
+        if (board[y][x] != "/" && board[y][x] != "*"
+            && board[y][x] != "." ) println("There is a number here!")
+        else if (action == "mine") {
+            if (board[y][x] == ".") {
+                board[y][x] = "*"
+            }
+            else if (board[y][x] == "*") {
+                board[y][x] = "."
+            }
+            else println("Неизвестная ячейка при наложении метки")
+            printBoard()
+            statusTurn = true
+            checkWin()
+        } else if (action == "free") {
+            checkEmpty(x, y)
+            board[y][x] = boardMines[y][x]
+            failGameBoardGenerate()
+            checkFail(x, y)
+            checkImpossibleSituation()
+            printBoard()
+            statusTurn = true
+            checkWin()
+        }
+        else println("Что-то пошло не так, не верный вариант хода")
+    }
+}
+
+fun checkImpossibleSituation() {
+    repeat(3) {
+        for (i in 0..8) {
+        	for (q in 0..8) { // Check "*" and "/" for vertical
+        		if (i == 0 && board[i][q] == "/") board[i+1][q] = boardMines[i+1][q]  
+        		if (i == 8 && board[i][q] == "/") board[i-1][q] = boardMines[i-1][q]
+        		if (i in 1..7 && board[i][q] == "/") {
+        			board[i-1][q] = boardMines[i-1][q]   
+        			board[i+1][q] = boardMines[i+1][q]   
+        		}
+                //  Check "*" and "/" for horizontal
+        		if (q == 0 && board[i][q] == "/") board[i][q+1] = boardMines[i][q+1]
+        		if (q == 8 && board[i][q] == "/") board[i][q-1] = boardMines[i][q-1]
+        		if (q in 1..7 && board[i][q] == "/") {  
+        			board[i][q-1] = boardMines[i][q-1]
+        			board[i][q+1] = boardMines[i][q+1]
+        		}
+            }
+        }
+    }
+
+for (i in 1..7) {  // Check "*" and "/" for centr board diagonally
+        for (q in 1..7) {
+            if (board[i][q] == ".") {
+                if (board[i-1][q-1] == "/") board[i][q] = boardMines[i][q]
+                else if (board[i][q-1] == "/") board[i][q] = boardMines[i][q]
+                else if (board[i+1][q-1] == "/") board[i][q] = boardMines[i][q]
+                else if (board[i+1][q] == "/") board[i][q] = boardMines[i][q]
+                else if (board[i+1][q+1] == "/") board[i][q] = boardMines[i][q]
+                else if (board[i][q+1] == "/") board[i][q] = boardMines[i][q]
+                else if ( board[i-1][q+1] == "/")board[i][q] = boardMines[i][q]
+                else if (board[i-1][q] == "/") board[i][q] = boardMines[i][q]
+            }
+        }
+    }
+}
+
+fun failGameBoardGenerate() {
+    for (i in 0..8) {
+        for (q in 0..8) {
+            boardMinesAndTurns[i][q] = board[i][q]
+            if (boardMines[i][q] == "X") boardMinesAndTurns[i][q] = "X"
+        }
+    }
+}
+
+fun checkWin() {
+    var matchingMines = 0
+    var mismatchMines = 0
+    var points = 0
+    for (i in 0..8) {
+        for (q in 0..8) {
+            if (board[i][q] == "*" && boardMines[i][q] == "X") matchingMines++
+            else if (board[i][q] == "*" && boardMines[i][q] != "X") mismatchMines++
+            else if (board[i][q] == ".") points++
+        }
+    }
+    if ((matchingMines == mines && mismatchMines == 0) || (points == mines)) {
+        println("Congratulations! You found all the mines!")
+        exitProcess(0)
+    } else turn()
+}
+
+fun checkFail(x: Int, y: Int) {
+    if (boardMines[y][x] == "X") {
+        printBoardFail()
+        println("You stepped on a mine and failed!")
+        exitProcess(0)
+    }
+}
+
+
+
+fun main() {
+    print("How many mines do you want on the field? ")
+    mines = readln().toInt()
+    getRandomMinesPosition(mines)
+    cellsWithNumbers()
+    printBoard()
+    turn()
+    checkWin()
+}
